@@ -3,18 +3,21 @@ use bevy::{
     render::render_resource::{Extent3d, TextureDimension, TextureFormat},
 };
 use bevy_rapier3d::prelude::*;
-use std::f32::consts::PI;
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(spawn_player).add_system(rotate);
+        app.add_startup_system(spawn_player)
+            .add_system(move_player)
+            .add_system(player_died);
     }
 }
 
 #[derive(Component)]
-struct Shape;
+struct Player;
+
+const FORCE: f32 = 20.;
 
 fn spawn_player(
     mut commands: Commands,
@@ -27,21 +30,24 @@ fn spawn_player(
         ..default()
     });
 
-    let ball = meshes.add(shape::UVSphere::default().into());
+    const SIZE: f32 = 1.0;
 
     commands
         .spawn((
             Name::new("Player"),
+            Player,
             PbrBundle {
-                mesh: ball,
+                mesh: meshes.add(shape::UVSphere::default().into()),
                 material: debug_material,
-                transform: Transform::from_xyz(2.0, 2.0, 0.0)
-                    .with_rotation(Quat::from_rotation_x(-PI / 4.)),
+                transform: Transform::from_xyz(2. * SIZE, 2. * SIZE, 0.0),
                 ..default()
             },
-            Shape,
         ))
-        .insert((RigidBody::Dynamic, Collider::ball(1.)));
+        .insert((
+            RigidBody::Dynamic,
+            Collider::ball(SIZE),
+            ExternalForce::default(),
+        ));
 }
 
 /// Creates a colorful test pattern
@@ -72,8 +78,35 @@ fn uv_debug_texture() -> Image {
     )
 }
 
-fn rotate(mut query: Query<&mut Transform, With<Shape>>, time: Res<Time>) {
-    for mut transform in &mut query {
-        transform.rotate_y(time.delta_seconds() / 2.);
+///
+/// Moves the player : Up, Down, Left, Right
+///
+fn move_player(mut player: Query<&mut ExternalForce, With<Player>>, keys: Res<Input<KeyCode>>) {
+    if let Ok(mut force) = player.get_single_mut() {
+        let mut direction = Vec3::ZERO;
+
+        if keys.pressed(KeyCode::Up) {
+            direction.z -= FORCE;
+        }
+        if keys.pressed(KeyCode::Down) {
+            direction.z += FORCE;
+        }
+        if keys.pressed(KeyCode::Left) {
+            direction.x -= FORCE;
+        }
+        if keys.pressed(KeyCode::Right) {
+            direction.x += FORCE;
+        }
+        force.force = direction;
+    }
+}
+
+/// Check if the player died
+fn player_died(mut commands: Commands, mut player: Query<(Entity, &Transform), With<Player>>) {
+    if let Ok((entity, transform)) = player.get_single_mut() {
+        if transform.translation.y < -20.0 {
+            commands.entity(entity).despawn();
+            warn!("Player died !");
+        }
     }
 }
