@@ -17,8 +17,6 @@ impl Plugin for PlayerPlugin {
 #[derive(Component)]
 struct Player;
 
-const FORCE: f32 = 20.;
-
 fn spawn_player(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -46,7 +44,7 @@ fn spawn_player(
         .insert((
             RigidBody::Dynamic,
             Collider::ball(SIZE),
-            ExternalForce::default(),
+            ExternalImpulse::default(),
         ));
 }
 
@@ -81,23 +79,30 @@ fn uv_debug_texture() -> Image {
 ///
 /// Moves the player : Up, Down, Left, Right
 ///
-fn move_player(mut player: Query<&mut ExternalForce, With<Player>>, keys: Res<Input<KeyCode>>) {
-    if let Ok(mut force) = player.get_single_mut() {
+fn move_player(
+    mut player: Query<(&mut ExternalImpulse, &Transform), With<Player>>,
+    keys: Res<Input<KeyCode>>,
+) {
+    if let Ok((mut impulse, transform)) = player.get_single_mut() {
         let mut direction = Vec3::ZERO;
 
-        if keys.pressed(KeyCode::Up) {
-            direction.z -= FORCE;
+        if keys.pressed(KeyCode::Numpad8) {
+            direction.z -= 1.;
         }
-        if keys.pressed(KeyCode::Down) {
-            direction.z += FORCE;
+        if keys.pressed(KeyCode::Numpad2) {
+            direction.z += 1.;
         }
-        if keys.pressed(KeyCode::Left) {
-            direction.x -= FORCE;
+        if keys.pressed(KeyCode::Numpad4) {
+            direction.x -= 1.;
         }
-        if keys.pressed(KeyCode::Right) {
-            direction.x += FORCE;
+        if keys.pressed(KeyCode::Numpad6) {
+            direction.x += 1.;
         }
-        force.force = direction;
+        *impulse = ExternalImpulse::at_point(
+            direction.normalize_or_zero(),
+            transform.translation,
+            transform.translation,
+        );
     }
 }
 
