@@ -45,6 +45,10 @@ fn spawn_player(
             RigidBody::Dynamic,
             Collider::ball(SIZE),
             ExternalImpulse::default(),
+            Damping {
+                linear_damping: 0.5,
+                ..Default::default()
+            },
         ));
 }
 
