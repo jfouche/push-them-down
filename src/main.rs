@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
 mod camera;
+mod enemy;
 mod player;
 
 fn main() {
@@ -22,6 +23,7 @@ fn main() {
         .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(camera::CameraPlugin)
         .add_plugin(player::PlayerPlugin)
+        .add_plugin(enemy::EnemyPlugin)
         .add_startup_system(spawn_light)
         .add_startup_system(spawn_ground)
         .run();
