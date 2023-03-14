@@ -2,6 +2,7 @@ use bevy::{
     prelude::*,
     render::render_resource::{Extent3d, TextureDimension, TextureFormat},
 };
+use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
 pub struct PlayerPlugin;
@@ -28,16 +29,19 @@ fn spawn_player(
 
     let ball = meshes.add(shape::UVSphere::default().into());
 
-    commands.spawn((
-        PbrBundle {
-            mesh: ball,
-            material: debug_material,
-            transform: Transform::from_xyz(2.0, 2.0, 0.0)
-                .with_rotation(Quat::from_rotation_x(-PI / 4.)),
-            ..default()
-        },
-        Shape,
-    ));
+    commands
+        .spawn((
+            Name::new("Player"),
+            PbrBundle {
+                mesh: ball,
+                material: debug_material,
+                transform: Transform::from_xyz(2.0, 2.0, 0.0)
+                    .with_rotation(Quat::from_rotation_x(-PI / 4.)),
+                ..default()
+            },
+            Shape,
+        ))
+        .insert((RigidBody::Dynamic, Collider::ball(1.)));
 }
 
 /// Creates a colorful test pattern

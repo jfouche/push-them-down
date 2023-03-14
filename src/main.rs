@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_rapier3d::prelude::*;
 
 mod camera;
 mod player;
@@ -16,6 +17,8 @@ fn main() {
                 })
                 .set(ImagePlugin::default_nearest()),
         )
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(camera::CameraPlugin)
         .add_plugin(player::PlayerPlugin)
         .add_startup_system(spawn_light)
@@ -42,9 +45,14 @@ fn spawn_ground(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // ground plane
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(shape::Plane::from_size(50.0).into()),
-        material: materials.add(Color::SILVER.into()),
-        ..default()
-    });
+    commands
+        .spawn((
+            Name::new("Ground"),
+            PbrBundle {
+                mesh: meshes.add(shape::Plane::from_size(50.0).into()),
+                material: materials.add(Color::SILVER.into()),
+                ..default()
+            },
+        ))
+        .insert((RigidBody::Fixed, Collider::cuboid(25., 0., 25.)));
 }
