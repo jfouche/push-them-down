@@ -15,7 +15,9 @@ impl Plugin for PlayerPlugin {
 }
 
 #[derive(Component)]
-struct Player;
+pub struct Player;
+
+const FORCE: f32 = 20.0;
 
 fn spawn_player(
     mut commands: Commands,
@@ -44,7 +46,7 @@ fn spawn_player(
         .insert((
             RigidBody::Dynamic,
             Collider::ball(SIZE),
-            ExternalImpulse::default(),
+            ExternalForce::default(),
             Damping {
                 linear_damping: 0.5,
                 ..Default::default()
@@ -84,10 +86,10 @@ fn uv_debug_texture() -> Image {
 /// Moves the player : Up, Down, Left, Right
 ///
 fn move_player(
-    mut player: Query<(&mut ExternalImpulse, &Transform), With<Player>>,
+    mut player: Query<(&mut ExternalForce, &Transform), With<Player>>,
     keys: Res<Input<KeyCode>>,
 ) {
-    if let Ok((mut impulse, transform)) = player.get_single_mut() {
+    if let Ok((mut force, transform)) = player.get_single_mut() {
         let mut direction = Vec3::ZERO;
 
         if keys.pressed(KeyCode::Numpad8) {
@@ -102,8 +104,8 @@ fn move_player(
         if keys.pressed(KeyCode::Numpad6) {
             direction.x += 1.;
         }
-        *impulse = ExternalImpulse::at_point(
-            direction.normalize_or_zero(),
+        *force = ExternalForce::at_point(
+            direction.normalize_or_zero() * FORCE,
             transform.translation,
             transform.translation,
         );
