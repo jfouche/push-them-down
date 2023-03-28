@@ -1,5 +1,3 @@
-use bevy::prelude::*;
-
 #[cfg(test)]
 mod test {
     use bevy::prelude::*;
