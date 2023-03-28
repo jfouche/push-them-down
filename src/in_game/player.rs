@@ -4,13 +4,21 @@ use bevy::{
 };
 use bevy_rapier3d::prelude::*;
 
+use crate::AppState;
+
+use super::SimulationState;
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(spawn_player)
-            .add_system(move_player)
-            .add_system(player_died);
+        app.add_system(spawn_player.in_schedule(OnEnter(AppState::InGame)))
+            .add_system(despawn_player.in_schedule(OnExit(AppState::InGame)))
+            .add_systems(
+                (move_player, player_died)
+                    .in_set(OnUpdate(AppState::InGame))
+                    .in_set(OnUpdate(SimulationState::Running)),
+            );
     }
 }
 
@@ -52,6 +60,12 @@ fn spawn_player(
                 ..Default::default()
             },
         ));
+}
+
+fn despawn_player(mut commands: Commands, player_query: Query<Entity, With<Player>>) {
+    if let Ok(player_entity) = player_query.get_single() {
+        commands.entity(player_entity).despawn();
+    }
 }
 
 /// Creates a colorful test pattern

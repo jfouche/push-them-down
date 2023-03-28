@@ -2,8 +2,15 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
 mod camera;
-mod enemy;
-mod player;
+mod in_game;
+
+#[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
+pub enum AppState {
+    #[default]
+    MainMenu,
+    InGame,
+    GameOver,
+}
 
 fn main() {
     App::new()
@@ -21,11 +28,16 @@ fn main() {
         .add_plugin(bevy_inspector_egui::quick::WorldInspectorPlugin::new())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(RapierDebugRenderPlugin::default())
+        // PLUGINS
+        .add_state::<AppState>()
         .add_plugin(camera::CameraPlugin)
-        .add_plugin(player::PlayerPlugin)
-        .add_plugin(enemy::EnemyPlugin)
+        .add_plugin(in_game::InGamePlugin)
+        // STARTUP
         .add_startup_system(spawn_light)
         .add_startup_system(spawn_ground)
+        // SYSTEMS
+        .add_system(transition_to_game_state)
+        .add_system(transition_to_main_menu_state)
         .run();
 }
 
@@ -58,4 +70,26 @@ fn spawn_ground(
             },
         ))
         .insert((RigidBody::Fixed, Collider::cuboid(25., 0., 25.)));
+}
+
+fn transition_to_game_state(
+    keyboard: Res<Input<KeyCode>>,
+    app_state: Res<State<AppState>>,
+    mut next_app_state: ResMut<NextState<AppState>>,
+) {
+    if keyboard.just_pressed(KeyCode::G) && app_state.0 != AppState::InGame {
+        next_app_state.set(AppState::InGame);
+        info!("Entered AppState::Game");
+    }
+}
+
+fn transition_to_main_menu_state(
+    keyboard: Res<Input<KeyCode>>,
+    app_state: Res<State<AppState>>,
+    mut next_app_state: ResMut<NextState<AppState>>,
+) {
+    if keyboard.just_pressed(KeyCode::M) && app_state.0 != AppState::MainMenu {
+        next_app_state.set(AppState::MainMenu);
+        info!("Entered AppState::MainMenu");
+    }
 }
