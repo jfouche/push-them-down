@@ -4,6 +4,7 @@ use bevy_rapier3d::prelude::RapierConfiguration;
 use crate::AppState;
 
 mod enemy;
+mod pause;
 mod player;
 
 pub struct InGamePlugin;
@@ -13,6 +14,7 @@ impl Plugin for InGamePlugin {
         app.add_state::<SimulationState>()
             .add_plugin(player::PlayerPlugin)
             .add_plugin(enemy::EnemyPlugin)
+            .add_plugin(pause::PausePlugin)
             .add_startup_system(stop_simulation)
             .add_system(start_simulation.in_schedule(OnEnter(SimulationState::Running)))
             .add_system(stop_simulation.in_schedule(OnExit(SimulationState::Running)))
@@ -22,8 +24,8 @@ impl Plugin for InGamePlugin {
 
 #[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
 pub enum SimulationState {
-    Running,
     #[default]
+    Running,
     Paused,
 }
 

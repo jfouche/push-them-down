@@ -3,6 +3,7 @@ use bevy_rapier3d::prelude::*;
 
 mod camera;
 mod in_game;
+mod utils;
 
 #[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
 pub enum AppState {
@@ -11,6 +12,9 @@ pub enum AppState {
     InGame,
     GameOver,
 }
+
+#[derive(Resource, Deref)]
+pub struct UiFont(pub Handle<Font>);
 
 fn main() {
     App::new()
@@ -33,12 +37,18 @@ fn main() {
         .add_plugin(camera::CameraPlugin)
         .add_plugin(in_game::InGamePlugin)
         // STARTUP
+        .add_startup_system(load_font)
         .add_startup_system(spawn_light)
         .add_startup_system(spawn_ground)
         // SYSTEMS
         .add_system(transition_to_game_state)
         .add_system(transition_to_main_menu_state)
         .run();
+}
+
+fn load_font(mut commands: Commands, server: Res<AssetServer>) {
+    let handle: Handle<Font> = server.load("fonts/FiraSans-Bold.ttf");
+    commands.insert_resource(UiFont(handle));
 }
 
 fn spawn_light(mut commands: Commands) {
