@@ -3,6 +3,7 @@ use bevy_rapier3d::prelude::*;
 
 mod camera;
 mod in_game;
+mod main_menu;
 mod utils;
 
 #[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
@@ -36,6 +37,7 @@ fn main() {
         .add_state::<AppState>()
         .add_plugin(camera::CameraPlugin)
         .add_plugin(in_game::InGamePlugin)
+        .add_plugin(main_menu::MainMenuPlugin)
         // STARTUP
         .add_startup_system(load_font)
         .add_startup_system(spawn_light)

@@ -1,23 +1,21 @@
 use bevy::prelude::*;
 
-use crate::{utils::dialog::spawn_modal_dialog, UiFont};
+use crate::{utils::dialog::spawn_modal_dialog, AppState, UiFont};
 
-use super::SimulationState;
+pub struct MainMenuPlugin;
 
-pub struct PausePlugin;
-
-impl Plugin for PausePlugin {
+impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(spawn_menu.in_schedule(OnEnter(SimulationState::Paused)))
-            .add_system(despawn_menu.in_schedule(OnExit(SimulationState::Paused)));
+        app.add_system(spawn_menu.in_schedule(OnEnter(AppState::MainMenu)))
+            .add_system(despawn_menu.in_schedule(OnExit(AppState::MainMenu)));
     }
 }
 
 #[derive(Component)]
-struct PauseMenu;
+struct MainMenu;
 
 fn spawn_menu(mut commands: Commands, font: Res<UiFont>) {
-    spawn_modal_dialog(&mut commands, font.clone(), "Pause menu", |dialog| {
+    spawn_modal_dialog(&mut commands, font.clone(), "Main menu", |dialog| {
         let text_style = TextStyle {
             font: font.clone(),
             font_size: 20.0,
@@ -25,7 +23,7 @@ fn spawn_menu(mut commands: Commands, font: Res<UiFont>) {
         };
         dialog.spawn(TextBundle {
             text: Text::from_sections([
-                TextSection::new("PAUSE MENU", text_style.clone()),
+                TextSection::new("MAIN MENU", text_style.clone()),
                 TextSection::from_style(text_style),
             ]),
             style: Style {
@@ -38,10 +36,10 @@ fn spawn_menu(mut commands: Commands, font: Res<UiFont>) {
             ..default()
         });
     })
-    .insert(PauseMenu);
+    .insert(MainMenu);
 }
 
-fn despawn_menu(mut commands: Commands, menu: Query<Entity, With<PauseMenu>>) {
+fn despawn_menu(mut commands: Commands, menu: Query<Entity, With<MainMenu>>) {
     if let Ok(entity) = menu.get_single() {
         commands.entity(entity).despawn_recursive();
     }
