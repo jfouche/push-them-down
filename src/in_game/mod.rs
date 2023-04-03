@@ -18,7 +18,7 @@ impl Plugin for InGamePlugin {
             .add_startup_system(stop_simulation)
             .add_system(start_simulation.in_schedule(OnEnter(SimulationState::Running)))
             .add_system(stop_simulation.in_schedule(OnExit(SimulationState::Running)))
-            .add_system(toggle_simulation.in_set(OnUpdate(AppState::InGame)));
+            .add_system(toggle_simulation.run_if(in_state(AppState::InGame)));
     }
 }
 

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{utils::dialog::spawn_modal_dialog, UiFont};
+use crate::{ui::dialog::spawn_modal_dialog, UiFont};
 
 use super::SimulationState;
 

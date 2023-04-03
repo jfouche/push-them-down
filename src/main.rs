@@ -4,7 +4,7 @@ use bevy_rapier3d::prelude::*;
 mod camera;
 mod in_game;
 mod main_menu;
-mod utils;
+mod ui;
 
 #[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
 pub enum AppState {
