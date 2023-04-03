@@ -15,7 +15,11 @@ impl Plugin for PlayerPlugin {
         app.add_system(spawn_player.in_schedule(OnEnter(AppState::InGame)))
             .add_system(despawn_player.in_schedule(OnExit(AppState::InGame)))
             .add_systems(
-                (move_player, player_died)
+                (
+                    move_player,
+                    player_died,
+                    limit_player_speed.after(move_player),
+                )
                     .in_set(OnUpdate(AppState::InGame))
                     .in_set(OnUpdate(SimulationState::Running)),
             );
@@ -25,7 +29,8 @@ impl Plugin for PlayerPlugin {
 #[derive(Component)]
 pub struct Player;
 
-const FORCE: f32 = 20.0;
+const FORCE: f32 = 50.0;
+const MAX_VELOCITY: f32 = 500.0;
 
 fn spawn_player(
     mut commands: Commands,
@@ -54,6 +59,7 @@ fn spawn_player(
         .insert((
             RigidBody::Dynamic,
             Collider::ball(SIZE),
+            Velocity::default(),
             ExternalForce::default(),
             Damping {
                 linear_damping: 0.5,
@@ -123,6 +129,14 @@ fn move_player(
             transform.translation,
             transform.translation,
         );
+    }
+}
+
+fn limit_player_speed(mut player: Query<&mut Velocity, With<Player>>) {
+    if let Ok(mut velocity) = player.get_single_mut() {
+        if velocity.linvel.length() > MAX_VELOCITY {
+            velocity.linvel = velocity.linvel.normalize() * MAX_VELOCITY;
+        }
     }
 }
 
